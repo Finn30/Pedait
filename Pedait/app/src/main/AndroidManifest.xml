@@ -24,6 +24,9 @@
         <activity android:name="com.journeyapps.barcodescanner.CaptureActivity"
             android:screenOrientation="portrait"
             tools:replace="screenOrientation"/>
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value=""/>
     </application>
 
 </manifest>
