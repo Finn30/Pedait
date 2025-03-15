@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "762293073178",
+    "project_id": "pedait",
+    "storage_bucket": "pedait.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:762293073178:android:d2a759168ad59f463be8a3",
+        "android_client_info": {
+          "package_name": "com.example.pedait"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvnSFkg59bN6Ws87uReSGWdhOslNkmev0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

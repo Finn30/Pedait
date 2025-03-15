@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.map.secret) apply false
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -50,6 +51,10 @@ dependencies {
     implementation(libs.google.play.services.location)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.qr.scanner)
+    implementation(libs.firebase.auth)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
