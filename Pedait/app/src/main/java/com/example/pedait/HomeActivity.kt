@@ -25,8 +25,14 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanIntentResult
 import com.journeyapps.barcodescanner.ScanOptions
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+import okhttp3.*
+import java.io.IOException
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback {
+
+class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var scanQRBtn: FloatingActionButton
     private lateinit var findLocationBtn: FloatingActionButton
@@ -35,12 +41,20 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
 //    private val allowedLocation = LatLng(-8.586907, 116.092187)
-    private val allowedLocation = LatLng(-8.6224467, 116.0875726)
+
+//    private val allowedLocation = LatLng(-8.6224467, 116.0875726)
+
+    // Gedung A
+    private val allowedLocation = LatLng(-8.5871109, 116.0971896)
+
+    // Gedung D
+//        private val allowedLocation = LatLng(-8.5867426, 116.0967105)
+
     private val locationThreshold = 50
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_home)
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -173,6 +187,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         map = googleMap
 
         map.uiSettings.isMyLocationButtonEnabled = false
+        map.uiSettings.isZoomControlsEnabled = true
+        map.uiSettings.isZoomGesturesEnabled = true
 
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             map.isMyLocationEnabled = true
@@ -187,8 +203,84 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         if (result.contents == null) {
             Toast.makeText(this, "Scan dibatalkan", Toast.LENGTH_SHORT).show()
         } else {
-            scannedValueTv.text = "Scanned Value: ${result.contents}"
+            try {
+                val qrData = JSONObject(result.contents)
+                val sessionId = qrData.getString("session_id")
+                val lat = qrData.getDouble("lat")
+                val lng = qrData.getDouble("lng")
+                val radius = qrData.optInt("radius", 50)
+
+                // Ganti allowedLocation dengan lokasi dari QR
+                val newAllowedLocation = LatLng(lat, lng)
+
+                checkUserDistanceAndSendAttendance(newAllowedLocation, sessionId, radius)
+
+            } catch (e: Exception) {
+                Toast.makeText(this, "QR Code tidak valid", Toast.LENGTH_LONG).show()
+            }
         }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun checkUserDistanceAndSendAttendance(qrLocation: LatLng, sessionId: String, radius: Int) {
+        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+            if (location != null) {
+                val userLatLng = LatLng(location.latitude, location.longitude)
+                val distance = calculateDistance(userLatLng, qrLocation)
+
+                if (distance <= radius) {
+                    sendAttendanceToServer(sessionId)
+                } else {
+                    Toast.makeText(this, "Anda berada di luar area yang diizinkan", Toast.LENGTH_LONG).show()
+                }
+            } else {
+                Toast.makeText(this, "Lokasi tidak ditemukan, coba lagi", Toast.LENGTH_LONG).show()
+            }
+        }.addOnFailureListener {
+            Toast.makeText(this, "Gagal mendapatkan lokasi: ${it.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+
+
+    private fun sendAttendanceToServer(sessionId: String) {
+        // Ganti dengan ID mahasiswa yang sesuai
+        val studentId = "123456"
+        val studentName = "Budi Santoso"
+
+        val json = JSONObject()
+        json.put("session_id", sessionId)
+        json.put("student_id", studentId)
+        json.put("student_name", studentName)
+
+
+        val requestBody = json.toString().toRequestBody("application/json".toMediaType())
+
+        val request = Request.Builder()
+            .url("http://10.70.13.4:5000/attended")
+            .post(requestBody)
+            .build()
+
+        val client = OkHttpClient()
+        client.newCall(request).enqueue(object : Callback {
+            override fun onResponse(call: Call, response: Response) {
+                if (response.isSuccessful) {
+                    runOnUiThread {
+                        Toast.makeText(this@HomeActivity, "Presensi berhasil", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    runOnUiThread {
+                        Toast.makeText(this@HomeActivity, "Gagal mengirim data presensi", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call, e: IOException) {
+                runOnUiThread {
+                    Toast.makeText(this@HomeActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        })
     }
 
     private fun isLocationEnabled(): Boolean {
