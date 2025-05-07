@@ -13,50 +13,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-<!--        <androidx.fragment.app.FragmentContainerView-->
-<!--            android:id="@+id/map_fragment"-->
-<!--            android:name="com.google.android.gms.maps.SupportMapFragment"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="match_parent"-->
-<!--            android:layout_marginBottom="25dp"-->
-<!--            app:layout_behavior="@string/appbar_scrolling_view_behavior"/>-->
+        <!--        <androidx.fragment.app.FragmentContainerView-->
+        <!--            android:id="@+id/map_fragment"-->
+        <!--            android:name="com.google.android.gms.maps.SupportMapFragment"-->
+        <!--            android:layout_width="match_parent"-->
+        <!--            android:layout_height="match_parent"-->
+        <!--            android:layout_marginBottom="25dp"-->
+        <!--            app:layout_behavior="@string/appbar_scrolling_view_behavior"/>-->
     </FrameLayout>
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/findLocationBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_location"
-        android:layout_gravity="end|bottom"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="70dp"
-        android:backgroundTint="@color/steel_blue"
-        android:contentDescription="Find my location"
-        android:importantForAccessibility="yes"/>
-
-    <androidx.appcompat.widget.LinearLayoutCompat
-        android:id="@+id/layout_result"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_gravity="center"
-        android:gravity="center">
-
-        <ImageView
-            android:src="@drawable/qr_scan"
-            android:layout_width="100dp"
-            android:layout_height="100dp"/>
-        <TextView
-            android:id="@+id/textResult"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:textSize="26sp"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            android:text="Result"/>
-
-    </androidx.appcompat.widget.LinearLayoutCompat>
 
     <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/bottomAppBar"

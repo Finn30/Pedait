@@ -21,6 +21,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanIntentResult
@@ -62,6 +63,32 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
             insets
         }
 
+//        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+//        bottomNavigationView.background = null
+//
+//        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
+//            when (item.itemId) {
+//                R.id.menuSchedule -> {
+//                    supportFragmentManager.beginTransaction().replace(R.id.map_container, ScheduleFragment()).commit()
+//                    true
+//                }
+//                R.id.menuPresence -> {
+//                    supportFragmentManager.beginTransaction().replace(R.id.map_container, PresenceFragment()).commit()
+//                    true
+//                }
+//                R.id.menuProfile -> {
+//                    supportFragmentManager.beginTransaction().replace(R.id.map_container, ProfileFragment()).commit()
+//                    true
+//                }
+//                R.id.menuHome -> {
+//                    // Jangan lakukan apa-apa, karena HomeActivity sudah aktif
+//                    true
+//                }
+//                else -> false
+//            }
+//        }
+
+
         scanQRBtn = findViewById(R.id.scanQRBtn)
         findLocationBtn = findViewById(R.id.findLocationBtn)
         scannedValueTv = findViewById(R.id.textResult)
@@ -74,8 +101,14 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
             )
         )
 
-        val mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as? SupportMapFragment
-        mapFragment?.getMapAsync(this)
+//        val mapFragment = supportFragmentManager.findFragmentById(R.id.map_fragment) as? SupportMapFragment
+//        mapFragment?.getMapAsync(this)
+
+        val mapFragment = SupportMapFragment.newInstance()
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.map_container, mapFragment)
+            .commit()
+
 
         findLocationBtn.setOnClickListener {
             getCurrentLocation()
@@ -187,7 +220,7 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
         map = googleMap
 
         map.uiSettings.isMyLocationButtonEnabled = false
-        map.uiSettings.isZoomControlsEnabled = true
+        map.uiSettings.isZoomControlsEnabled = false
         map.uiSettings.isZoomGesturesEnabled = true
 
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
