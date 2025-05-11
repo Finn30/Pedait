@@ -1,15 +1,21 @@
 package com.example.pedait
 
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import com.example.pedait.databinding.ActivityMainBinding
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.journeyapps.barcodescanner.ScanOptions
 
 class MainActivity : AppCompatActivity() {
 
@@ -45,7 +51,6 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
-        // FAB click - buka Scan QR Fragment atau Activity
         fab.setOnClickListener {
             startActivity(Intent(this, ScanQRActivity::class.java))
         }
@@ -57,4 +62,5 @@ class MainActivity : AppCompatActivity() {
             .replace(R.id.map_container, fragment)
             .commit()
     }
+
 }
