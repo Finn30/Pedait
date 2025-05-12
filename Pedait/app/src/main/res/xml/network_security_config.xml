@@ -3,10 +3,13 @@
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">localhost</domain>
         <domain includeSubdomains="true">127.0.0.1</domain>
-        <domain includeSubdomains="true">10.0.2.2</domain> <!-- Emulator -->
-        <domain includeSubdomains="true">10.70.0.28</domain> <!-- IP kamu -->
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">10.70.0.28</domain>
         <domain includeSubdomains="true">10.70.13.4</domain>
         <domain includeSubdomains="true">10.70.0.52</domain>
+        <domain includeSubdomains="true">10.80.0.71</domain>
+        <domain includeSubdomains="true">10.70.0.20</domain>
+        <domain includeSubdomains="true">10.70.1.8</domain>
     </domain-config>
 
 </network-security-config>

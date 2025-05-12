@@ -21,9 +21,6 @@
             android:name=".MainActivity"
             android:exported="false" />
         <activity
-            android:name=".ScanQRActivity"
-            android:exported="false" />
-        <activity
             android:name=".SignUpActivity"
             android:exported="false" />
         <activity
@@ -35,9 +32,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-<!--        <activity-->
-<!--            android:name=".HomeActivity"-->
-<!--            android:exported="true" />-->
         <activity
             android:name="com.journeyapps.barcodescanner.CaptureActivity"
             android:screenOrientation="portrait"
