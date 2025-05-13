@@ -57,7 +57,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
 
 //        scanQRBtn = view.findViewById(R.id.scanQRBtn)
         findLocationBtn = view.findViewById(R.id.findLocationBtn)
-        scannedValueTv = view.findViewById(R.id.textResult)
+//        scannedValueTv = view.findViewById(R.id.textResult)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
 
         locationPermissionRequest.launch(

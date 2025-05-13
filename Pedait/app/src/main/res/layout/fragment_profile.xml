@@ -1,46 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="24dp"
-    android:gravity="center"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="#D6E9FF"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:text="Edit Profile"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="24dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <EditText
-        android:id="@+id/etName"
-        android:hint="Enter Name"
-        android:textSize="18sp"
-        android:layout_marginBottom="12dp"
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center_horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/tvEmail"
-        android:text="Email"
-        android:textSize="16sp"
-        android:layout_marginBottom="8dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        <ImageView
+            android:src="@drawable/ic_profile"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginBottom="24dp"
+        android:background="@drawable/circle_background"
+        android:padding="16dp" />
 
-    <TextView
-        android:id="@+id/tvUid"
-        android:text="UID"
-        android:textSize="14sp"
-        android:layout_marginBottom="16dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        <EditText android:id="@+id/etNim" android:hint="NIM" style="@style/EditProfileField" />
+        <EditText android:id="@+id/etNama" android:hint="Nama" style="@style/EditProfileField" />
+        <EditText android:id="@+id/etTanggalLahir" android:hint="Tanggal lahir" style="@style/EditProfileField" />
+        <EditText android:id="@+id/etTempatLahir" android:hint="Tempat lahir" style="@style/EditProfileField" />
+        <EditText android:id="@+id/etProvinsiLahir" android:hint="Provinsi lahir" style="@style/EditProfileField" />
+        <EditText android:id="@+id/etJenisKelamin" android:hint="Jenis Kelamin" style="@style/EditProfileField" />
+        <EditText android:id="@+id/etAgama" android:hint="Agama" style="@style/EditProfileField" />
+        <EditText android:id="@+id/etNoHp" android:hint="No. HP" style="@style/EditProfileField" />
+        <EditText android:id="@+id/etEmail" android:hint="Email" style="@style/EditProfileField" />
 
-    <Button
-        android:id="@+id/btnSave"
-        android:text="Save"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-</LinearLayout>
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Simpan"
+            android:textAllCaps="false"
+            android:backgroundTint="#2196F3"
+            android:textColor="@android:color/white" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/btnLogout"
+            android:text="Logout"
+            android:textColor="#F44336"
+            android:layout_marginTop="16dp"
+            android:textSize="16sp"
+            android:layout_gravity="center" />
+
+    </LinearLayout>
+</ScrollView>

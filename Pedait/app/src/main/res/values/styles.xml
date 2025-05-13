@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="CustomEditText">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">12dp</item>
+        <item name="android:background">@android:drawable/edit_text</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="EditProfileField">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">12dp</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:background">@android:drawable/edit_text</item>
+    </style>
+
+</resources>
