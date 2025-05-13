@@ -18,6 +18,8 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanIntentResult
 import com.journeyapps.barcodescanner.ScanOptions
@@ -32,6 +34,9 @@ import org.json.JSONObject
 import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var auth: FirebaseAuth
+    private lateinit var firestore: FirebaseFirestore
 
     private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -50,6 +55,9 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        auth = FirebaseAuth.getInstance()
+        firestore = FirebaseFirestore.getInstance()
 
         bottomNavigationView = findViewById(R.id.bottomNavigationView)
         val fab = findViewById<FloatingActionButton>(R.id.scanQRBtn)
@@ -183,44 +191,63 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun sendAttendanceToServer(sessionId: String) {
-        val studentId = "F1D022121"
-        val studentName = "Gevano Kevin Ravensy"
+        val currentUser = auth.currentUser
+        if (currentUser == null) {
+            Toast.makeText(this, "Pengguna tidak ditemukan", Toast.LENGTH_LONG).show()
+            return
+        }
 
-        val json = JSONObject()
-        json.put("session_id", sessionId)
-        json.put("student_id", studentId)
-        json.put("student_name", studentName)
+        val uid = currentUser.uid
 
+        firestore.collection("users").document(uid).get()
+            .addOnSuccessListener { document ->
+                if (document != null && document.exists()) {
+                    val studentId = document.getString("nim") ?: "N/A"
+                    val studentName = document.getString("nama") ?: "N/A"
 
-        val requestBody = json.toString().toRequestBody("application/json".toMediaType())
+                    val json = JSONObject()
+                    json.put("session_id", sessionId)
+                    json.put("student_id", studentId)
+                    json.put("student_name", studentName)
 
-        val request = Request.Builder()
-            .url("http://10.70.1.8:5000/attended")
-            .post(requestBody)
-            .build()
+                    val requestBody = json.toString().toRequestBody("application/json".toMediaType())
 
-        val client = OkHttpClient()
-        client.newCall(request).enqueue(object : Callback {
-            override fun onResponse(call: Call, response: Response) {
-                if (response.isSuccessful) {
-                    runOnUiThread {
-                        Toast.makeText(this@MainActivity, "Presensi berhasil", Toast.LENGTH_SHORT).show()
-                        navigateToFragment(PresenceFragment(), R.id.menuPresence)
-                    }
+                    val request = Request.Builder()
+                        .url("http://10.70.0.93:5000/attended")
+                        .post(requestBody)
+                        .build()
+
+                    val client = OkHttpClient()
+                    client.newCall(request).enqueue(object : Callback {
+                        override fun onResponse(call: Call, response: Response) {
+                            if (response.isSuccessful) {
+                                runOnUiThread {
+                                    Toast.makeText(this@MainActivity, "Presensi berhasil", Toast.LENGTH_SHORT).show()
+                                    navigateToFragment(PresenceFragment(), R.id.menuPresence)
+                                }
+                            } else {
+                                runOnUiThread {
+                                    Toast.makeText(this@MainActivity, "Gagal mengirim data presensi", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+
+                        override fun onFailure(call: Call, e: IOException) {
+                            runOnUiThread {
+                                Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    })
+
                 } else {
-                    runOnUiThread {
-                        Toast.makeText(this@MainActivity, "Gagal mengirim data presensi", Toast.LENGTH_SHORT).show()
-                    }
+                    Toast.makeText(this, "Data pengguna tidak ditemukan di Firestore", Toast.LENGTH_LONG).show()
                 }
             }
-
-            override fun onFailure(call: Call, e: IOException) {
-                runOnUiThread {
-                    Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-                }
+            .addOnFailureListener {
+                Toast.makeText(this, "Gagal mengambil data pengguna: ${it.message}", Toast.LENGTH_LONG).show()
             }
-        })
     }
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
