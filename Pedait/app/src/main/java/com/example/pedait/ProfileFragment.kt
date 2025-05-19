@@ -54,6 +54,7 @@ class ProfileFragment : Fragment() {
         }
 
         return view
+        
     }
 
     private fun loadUserProfile() {

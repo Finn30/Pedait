@@ -2,7 +2,9 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:background="#D6E9FF"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:paddingBottom="80dp">
 
     <LinearLayout
         android:orientation="vertical"
@@ -12,12 +14,15 @@
         android:layout_height="wrap_content">
 
         <ImageView
+            android:id="@+id/ivProfilePicture"
             android:src="@drawable/ic_profile"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_marginBottom="24dp"
-        android:background="@drawable/circle_background"
-        android:padding="16dp" />
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginBottom="24dp"
+            android:background="@drawable/circle_background"
+            android:padding="16dp"
+            android:clickable="true"
+            android:focusable="true"/>
 
         <EditText android:id="@+id/etNim" android:hint="NIM" style="@style/EditProfileField" />
         <EditText android:id="@+id/etNama" android:hint="Nama" style="@style/EditProfileField" />
@@ -41,7 +46,7 @@
 
         <TextView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:id="@+id/btnLogout"
             android:text="Logout"
             android:textColor="#F44336"
