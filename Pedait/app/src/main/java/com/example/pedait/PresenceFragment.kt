@@ -35,7 +35,18 @@ class PresenceFragment : Fragment() {
         recyclerView.setHasFixedSize(true)
 
         courseArrayList = arrayListOf()
-        courseAdapter = CourseAdapter(courseArrayList)
+        courseAdapter = CourseAdapter(courseArrayList) { course ->
+            val bundle = Bundle()
+            bundle.putString("courseId", course.id)
+
+            val fragment = MeetingsFragment()
+            fragment.arguments = bundle
+
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.map_container, fragment)
+                .addToBackStack(null)
+                .commit()
+        }
         recyclerView.adapter = courseAdapter
 
         EventChangeListener()
@@ -51,7 +62,10 @@ class PresenceFragment : Fragment() {
 
             for (dc in value?.documentChanges!!) {
                 if (dc.type == DocumentChange.Type.ADDED) {
-                    courseArrayList.add(dc.document.toObject(Course::class.java))
+                    val course = dc.document.toObject(Course::class.java)
+                    course.id = dc.document.id
+//                    courseArrayList.add(dc.document.toObject(Course::class.java))
+                    courseArrayList.add(course)
                 }
             }
             courseAdapter.notifyDataSetChanged()
