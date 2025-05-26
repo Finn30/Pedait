@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity() {
     // Gedung A
     private val allowedLocation = LatLng(-8.5871109, 116.0971896)
 
-    private val locationThreshold = 50
+    private val locationThreshold = 10
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,7 +79,7 @@ class MainActivity : AppCompatActivity() {
 
         fab.setOnClickListener {
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-            checkUserLocationAndScan()
+            checkLocationThenAllowScan()
         }
 
     }
@@ -110,6 +110,47 @@ class MainActivity : AppCompatActivity() {
             "schedule" -> navigateToFragment(ScheduleFragment(), R.id.menuSchedule)
             "profile" -> navigateToFragment(ProfileFragment(), R.id.menuProfile)
             else -> navigateToFragment(HomeFragment(), R.id.menuHome)
+        }
+    }
+
+    fun distanceBetween(lat1: Double, lng1: Double, lat2: Double, lng2: Double): Float {
+        val loc1 = Location("").apply {
+            latitude = lat1
+            longitude = lng1
+        }
+        val loc2 = Location("").apply {
+            latitude = lat2
+            longitude = lng2
+        }
+        return loc1.distanceTo(loc2) // meter
+    }
+
+
+    @SuppressLint("MissingPermission")
+    private fun checkLocationThenAllowScan() {
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "Izin lokasi tidak diberikan", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+            if (location != null) {
+                val userLatLng = LatLng(location.latitude, location.longitude)
+                val distance = calculateDistance(userLatLng, allowedLocation)
+
+                if (distance <= locationThreshold) {
+                    // Lokasi valid, baru boleh scan
+                    scannerLauncher.launch(
+                        ScanOptions().setPrompt("Scan QR Code").setDesiredBarcodeFormats(ScanOptions.QR_CODE)
+                    )
+                } else {
+                    Toast.makeText(this, "Anda berada di luar area yang diizinkan untuk scan", Toast.LENGTH_LONG).show()
+                }
+            } else {
+                Toast.makeText(this, "Tidak bisa mendapatkan lokasi", Toast.LENGTH_LONG).show()
+            }
+        }.addOnFailureListener {
+            Toast.makeText(this, "Gagal mendapatkan lokasi: ${it.message}", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -213,7 +254,7 @@ class MainActivity : AppCompatActivity() {
                     val requestBody = json.toString().toRequestBody("application/json".toMediaType())
 
                     val request = Request.Builder()
-                        .url("http://10.70.0.93:5000/attended")
+                        .url("http://10.70.19.70:5000/attended")
                         .post(requestBody)
                         .build()
 
