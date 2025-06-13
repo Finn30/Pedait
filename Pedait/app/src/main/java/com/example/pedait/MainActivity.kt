@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -32,6 +33,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import org.json.JSONObject
 import java.io.IOException
+import androidx.core.view.size
 
 class MainActivity : AppCompatActivity() {
 
@@ -44,7 +46,13 @@ class MainActivity : AppCompatActivity() {
     // Gedung A
     private val allowedLocation = LatLng(-8.5871109, 116.0971896)
 
-    private val locationThreshold = 10
+    // Gedung D
+//    private val allowedLocation = LatLng(-8.5867426, 116.0967105)
+
+    // Gedung X
+//    private val allowedLocation = LatLng(-8.6223672, 116.0877100)
+
+    private val locationThreshold = 50
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -199,12 +207,20 @@ class MainActivity : AppCompatActivity() {
                 val lat = qrData.getDouble("lat")
                 val lng = qrData.getDouble("lng")
                 val radius = qrData.optInt("radius", 50)
+                val courseId = qrData.optString("course_id", "unknown_course")
+                val meetingId = qrData.optString("meeting_id", "unknown_meeting")
 
                 // Ganti allowedLocation dengan lokasi dari QR
                 val newAllowedLocation = LatLng(lat, lng)
 
-                checkUserDistanceAndSendAttendance(newAllowedLocation, sessionId, radius)
-
+//                checkUserDistanceAndSendAttendance(newAllowedLocation, sessionId, radius)
+                checkUserDistanceAndSendAttendance(
+                    LatLng(lat, lng),
+                    sessionId,
+                    radius,
+                    courseId,
+                    meetingId
+                )
             } catch (e: Exception) {
                 Toast.makeText(this, "QR Code tidak valid", Toast.LENGTH_LONG).show()
             }
@@ -212,14 +228,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     @SuppressLint("MissingPermission")
-    private fun checkUserDistanceAndSendAttendance(qrLocation: LatLng, sessionId: String, radius: Int) {
+    private fun checkUserDistanceAndSendAttendance(qrLocation: LatLng, sessionId: String, radius: Int, courseId: String, meetingId: String) {
         fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
             if (location != null) {
                 val userLatLng = LatLng(location.latitude, location.longitude)
                 val distance = calculateDistance(userLatLng, qrLocation)
 
                 if (distance <= radius) {
-                    sendAttendanceToServer(sessionId)
+                    sendAttendanceToServer(sessionId, courseId, meetingId)
                 } else {
                     Toast.makeText(this, "Anda berada di luar area yang diizinkan", Toast.LENGTH_LONG).show()
                 }
@@ -231,7 +247,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun sendAttendanceToServer(sessionId: String) {
+    private fun sendAttendanceToServer(sessionId: String, courseId: String, meetingId: String) {
         val currentUser = auth.currentUser
         if (currentUser == null) {
             Toast.makeText(this, "Pengguna tidak ditemukan", Toast.LENGTH_LONG).show()
@@ -246,21 +262,30 @@ class MainActivity : AppCompatActivity() {
                     val studentId = document.getString("nim") ?: "N/A"
                     val studentName = document.getString("nama") ?: "N/A"
 
+                    // ✅ SIMPAN NIM DI SHARED PREFERENCES
+                    val sharedPref = getSharedPreferences("user_data", MODE_PRIVATE)
+                    sharedPref.edit().putString("nim", studentId).apply()
+
                     val json = JSONObject()
+                    Log.e("Attendance", "Student ID: $studentId, Name: $studentName")
                     json.put("session_id", sessionId)
                     json.put("student_id", studentId)
                     json.put("student_name", studentName)
+                    json.put("course_id", courseId)
+                    json.put("meeting_id", meetingId)
 
                     val requestBody = json.toString().toRequestBody("application/json".toMediaType())
 
                     val request = Request.Builder()
-                        .url("http://10.70.19.70:5000/attended")
+                        .url("http://10.70.14.195:5000/attended")
                         .post(requestBody)
                         .build()
 
                     val client = OkHttpClient()
                     client.newCall(request).enqueue(object : Callback {
                         override fun onResponse(call: Call, response: Response) {
+                            val responseBody = response.body?.string()
+                            Log.e("Attendance", "Response code: ${response.code}, body: $responseBody")
                             if (response.isSuccessful) {
                                 runOnUiThread {
                                     Toast.makeText(this@MainActivity, "Presensi berhasil", Toast.LENGTH_SHORT).show()

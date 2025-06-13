@@ -4,14 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-
-    >
+    android:layout_height="match_parent">
 
     <FrameLayout
         android:id="@+id/map_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="25dp"
+        android:background="@color/zxing_transparent"
         android:fitsSystemWindows="false">
     </FrameLayout>
 
@@ -24,23 +24,24 @@
         android:background="@color/indigo_dye"
         app:fabCradleMargin="10dp"
         app:fabCradleRoundedCornerRadius="20dp"
-        app:fabCradleVerticalOffset="10dp">
+        app:fabCradleVerticalOffset="10dp"/>
 
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/bottomNavigationView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            app:menu="@menu/bottom_nav_bar"
-            app:itemIconTint="@color/white"
-            app:itemTextColor="@color/white"/>
-
-    </com.google.android.material.bottomappbar.BottomAppBar>
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom"
+        android:background="@android:color/transparent"
+        app:menu="@menu/bottom_nav_bar"
+        app:itemIconTint="@color/white"
+        app:itemTextColor="@color/white"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/scanQRBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="30dp"
         android:contentDescription="@string/app_name"
         android:backgroundTint="@color/steel_blue"
         android:tint="@color/white"

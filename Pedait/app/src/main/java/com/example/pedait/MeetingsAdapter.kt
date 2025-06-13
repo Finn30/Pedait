@@ -32,6 +32,7 @@ class MeetingsAdapter(private val meetingsList: ArrayList<Meetings>) : RecyclerV
 
         holder.tvDateTime.text = formatDate
         holder.tvTopic.text = meetings.topic
+        holder.tvStatus.text = meetings.status ?: "Belum hadir"
     }
 
     override fun getItemCount(): Int {
@@ -42,6 +43,7 @@ class MeetingsAdapter(private val meetingsList: ArrayList<Meetings>) : RecyclerV
 
         val tvDateTime = itemView.findViewById<TextView>(R.id.tvDateTime)
         val tvTopic = itemView.findViewById<TextView>(R.id.tvTopic)
+        val tvStatus = itemView.findViewById<TextView>(R.id.tvStatus)
 
     }
 

@@ -17,6 +17,7 @@ class PresenceFragment : Fragment() {
     private lateinit var courseArrayList: ArrayList<Course>
     private lateinit var courseAdapter: CourseAdapter
     private lateinit var db: FirebaseFirestore
+    private var nim: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,17 +36,29 @@ class PresenceFragment : Fragment() {
         recyclerView.setHasFixedSize(true)
 
         courseArrayList = arrayListOf()
+
+        // Ambil NIM dari SharedPreferences
+        val sharedPref = requireContext().getSharedPreferences("user_data", android.content.Context.MODE_PRIVATE)
+        nim = sharedPref.getString("nim", null)
+
+        Log.d("PresenceFragment", "NIM dari SharedPreferences: $nim")
+
         courseAdapter = CourseAdapter(courseArrayList) { course ->
-            val bundle = Bundle()
-            bundle.putString("courseId", course.id)
-
-            val fragment = MeetingsFragment()
-            fragment.arguments = bundle
-
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.map_container, fragment)
-                .addToBackStack(null)
-                .commit()
+            if (nim != null) {
+                val bundle = Bundle().apply {
+                    putString("courseId", course.id)
+                    putString("nim", nim)
+                }
+                val fragment = MeetingsFragment().apply {
+                    arguments = bundle
+                }
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.map_container, fragment)
+                    .addToBackStack(null)
+                    .commit()
+            } else {
+                Log.e("PresenceFragment", "NIM is null, cannot open MeetingsFragment properly")
+            }
         }
         recyclerView.adapter = courseAdapter
 
@@ -64,11 +77,11 @@ class PresenceFragment : Fragment() {
                 if (dc.type == DocumentChange.Type.ADDED) {
                     val course = dc.document.toObject(Course::class.java)
                     course.id = dc.document.id
-//                    courseArrayList.add(dc.document.toObject(Course::class.java))
                     courseArrayList.add(course)
                 }
             }
             courseAdapter.notifyDataSetChanged()
         }
     }
+
 }
