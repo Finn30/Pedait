@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import java.text.SimpleDateFormat
 import java.util.Locale
 import androidx.core.graphics.toColorInt
+import java.util.TimeZone
 
 class MeetingsAdapter(private val meetingsList: ArrayList<Meetings>) : RecyclerView.Adapter<MeetingsAdapter.ViewHolder>() {
 
@@ -25,7 +26,8 @@ class MeetingsAdapter(private val meetingsList: ArrayList<Meetings>) : RecyclerV
         Log.d("MeetingsAdapter", "Meeting timestamp: ${meetings.datetime}")
 
         val formatDate = meetings.datetime?.toDate()?.let { date ->
-            val sdf = SimpleDateFormat("dd/MM/yyyy, HH:mm", Locale.getDefault())
+            val sdf = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale("id"))
+            sdf.timeZone = TimeZone.getDefault()
             sdf.format(date)
         } ?: "Unknown Date"
         val timestamp = meetings.datetime

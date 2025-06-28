@@ -9,6 +9,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.Query
 
 class MeetingsFragment : Fragment() {
 
@@ -16,6 +18,7 @@ class MeetingsFragment : Fragment() {
     private lateinit var meetingsList: ArrayList<Meetings>
     private lateinit var meetingsAdapter: MeetingsAdapter
     private lateinit var db: FirebaseFirestore
+    private var listenerRegistration: ListenerRegistration? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,8 +34,6 @@ class MeetingsFragment : Fragment() {
         val courseId = arguments?.getString("courseId")
         val studentId = arguments?.getString("nim") ?: return
 
-        Log.d("MeetingsFragment", "courseId: $courseId, studentId: $studentId")
-
         db = FirebaseFirestore.getInstance()
 
         recyclerView = view.findViewById(R.id.recyclerViewMeetings)
@@ -41,100 +42,98 @@ class MeetingsFragment : Fragment() {
 
         meetingsList = arrayListOf()
         meetingsAdapter = MeetingsAdapter(meetingsList)
-
-        // Pastikan adapter di-attach setelah view terbentuk
-//        view.post {
-//            recyclerView.adapter = meetingsAdapter
-//        }
-        Log.d("MeetingsFragment", "Setting adapter...")
         recyclerView.adapter = meetingsAdapter
-        Log.d("MeetingsFragment", "Adapter set.")
 
-
-        EventChangeListener(courseId, studentId)
+        listenToMeetingsRealtime(courseId, studentId)
     }
 
-
-    private fun EventChangeListener(courseId: String?, studentId: String) {
+    private fun listenToMeetingsRealtime(courseId: String?, studentId: String) {
         if (courseId == null) {
             Log.e("MeetingsFragment", "courseId is null")
             return
         }
 
-        db = FirebaseFirestore.getInstance()
+        listenerRegistration?.remove() // Stop listener if already exists
 
-        db.collection("course")
+        listenerRegistration = db.collection("course")
             .document(courseId)
             .collection("meetings")
-            .get()
-            .addOnSuccessListener { meetingsSnapshot ->
-                if (meetingsSnapshot.isEmpty) {
-                    Log.d("MeetingsFragment", "No meetings found")
-                    return@addOnSuccessListener
+            .orderBy("datetime", Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Log.e("MeetingsFragment", "Error: ${error.message}")
+                    return@addSnapshotListener
                 }
 
-                val tempList = ArrayList<Meetings>()
-                var loadedCount = 0
-                val totalMeetings = meetingsSnapshot.size()
+                if (snapshot != null) {
+                    val tempList = ArrayList<Meetings>()
+                    var loadedCount = 0
+                    val totalMeetings = snapshot.size()
 
-                for (doc in meetingsSnapshot) {
-                    val meeting = doc.toObject(Meetings::class.java)
-                    val meetingId = doc.id
-                    val sessionId = doc.getString("session_id")
-
-                    if (sessionId == null) {
-                        loadedCount++
-                        Log.e("MeetingsFragment", "session_id is null for meeting $meetingId")
-                        if (loadedCount == totalMeetings) {
-                            updateRecyclerView(tempList)
-                        }
-                        continue
+                    if (totalMeetings == 0) {
+                        updateRecyclerView(tempList)
+                        return@addSnapshotListener
                     }
 
-                    db.collection("course")
-                        .document(courseId)
-                        .collection("meetings")
-                        .document(meetingId)
-                        .collection("sessions")
-                        .document(sessionId)
-                        .collection("attendances")
-                        .document(studentId)
-                        .get()
-                        .addOnSuccessListener { attendanceDoc ->
-                            meeting.status = if (attendanceDoc.exists()) {
-                                attendanceDoc.getString("status") ?: "hadir"
-                            } else {
-                                "Alpa"
+                    for (doc in snapshot.documents) {
+                        val meeting = doc.toObject(Meetings::class.java)
+                        val meetingId = doc.id
+                        val sessionId = doc.getString("session_id")
+
+                        if (meeting != null) {
+                            if (sessionId.isNullOrBlank()) {
+                                meeting.status = "Alpa"
+                                tempList.add(meeting)
+                                loadedCount++
+                                if (loadedCount == totalMeetings) {
+                                    updateRecyclerView(tempList)
+                                }
+                                continue
                             }
 
-                            tempList.add(meeting)
-                            loadedCount++
+                            db.collection("course")
+                                .document(courseId)
+                                .collection("meetings")
+                                .document(meetingId)
+                                .collection("sessions")
+                                .document(sessionId)
+                                .collection("attendances")
+                                .document(studentId)
+                                .addSnapshotListener { attDoc, _ ->
+                                    meeting.status = if (attDoc != null && attDoc.exists()) {
+                                        attDoc.getString("status") ?: "Hadir"
+                                    } else {
+                                        "Alpa"
+                                    }
 
+                                    tempList.add(meeting)
+                                    loadedCount++
+
+                                    if (loadedCount == totalMeetings) {
+                                        updateRecyclerView(tempList)
+                                    }
+                                }
+                        } else {
+                            loadedCount++
                             if (loadedCount == totalMeetings) {
                                 updateRecyclerView(tempList)
                             }
                         }
-                        .addOnFailureListener { e ->
-                            Log.e("MeetingsFragment", "Error loading attendance: ${e.message}")
-                            loadedCount++
-                            if (loadedCount == totalMeetings) {
-                                updateRecyclerView(tempList)
-                            }
-                        }
+                    }
                 }
-            }
-            .addOnFailureListener { e ->
-                Log.e("MeetingsFragment", "Error fetching meetings: ${e.message}")
             }
     }
 
     private fun updateRecyclerView(data: List<Meetings>) {
         meetingsList.clear()
-        meetingsList.addAll(data)
+        meetingsList.addAll(data.sortedByDescending { it.datetime?.toDate() })
         recyclerView.post {
             meetingsAdapter.notifyDataSetChanged()
         }
-        Log.d("MeetingsFragment", "Updated RecyclerView with ${meetingsList.size} items")
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        listenerRegistration?.remove()
+    }
 }

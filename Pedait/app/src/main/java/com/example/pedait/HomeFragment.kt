@@ -111,9 +111,6 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
                 val distance = calculateDistance(userLatLng, allowedLocation)
 
 //                scanQRBtn.isEnabled = true
-                if (distance > locationThreshold) {
-                    Toast.makeText(requireContext(), "Anda di luar area yang diizinkan", Toast.LENGTH_LONG).show()
-                }
             }
         }
     }
