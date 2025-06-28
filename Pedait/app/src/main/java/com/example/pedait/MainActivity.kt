@@ -239,7 +239,17 @@ class MainActivity : AppCompatActivity() {
                                     Toast.makeText(this@MainActivity, "QR Code sudah kadaluarsa", Toast.LENGTH_LONG).show()
                                 } else if (response.isSuccessful) {
                                     Toast.makeText(this@MainActivity, "Presensi berhasil", Toast.LENGTH_SHORT).show()
-                                    navigateToFragment(PresenceFragment(), R.id.menuPresence)
+                                    // Ambil NIM dari SharedPreferences
+                                    val sharedPref = getSharedPreferences("user_data", MODE_PRIVATE)
+                                    val nim = sharedPref.getString("nim", null)
+
+                                    if (nim != null) {
+                                        val meetingsFragment = MeetingsFragment.newInstance(courseId, nim)
+                                        openFragment(meetingsFragment)
+                                        bottomNavigationView.menu.findItem(R.id.menuPresence).isChecked = true
+                                    } else {
+                                        Toast.makeText(this@MainActivity, "NIM tidak ditemukan", Toast.LENGTH_SHORT).show()
+                                    }
                                 } else {
                                     Toast.makeText(this@MainActivity, "Gagal mengirim data presensi", Toast.LENGTH_SHORT).show()
                                 }

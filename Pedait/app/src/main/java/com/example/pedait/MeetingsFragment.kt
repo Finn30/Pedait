@@ -19,20 +19,24 @@ class MeetingsFragment : Fragment() {
     private lateinit var meetingsAdapter: MeetingsAdapter
     private lateinit var db: FirebaseFirestore
     private var listenerRegistration: ListenerRegistration? = null
+    private var studentId: String? = null
+    private var courseId: String? = null
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
+        inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_meetings, container, false)
-    }
+    ): View? = inflater.inflate(R.layout.fragment_meetings, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val courseId = arguments?.getString("courseId")
-        val studentId = arguments?.getString("nim") ?: return
+        courseId = arguments?.getString("courseId")
+        studentId = arguments?.getString("nim")
+
+        if (courseId == null || studentId == null) {
+            Log.e("MeetingsFragment", "courseId or studentId is null")
+            return
+        }
 
         db = FirebaseFirestore.getInstance()
 
@@ -44,80 +48,80 @@ class MeetingsFragment : Fragment() {
         meetingsAdapter = MeetingsAdapter(meetingsList)
         recyclerView.adapter = meetingsAdapter
 
-        listenToMeetingsRealtime(courseId, studentId)
+        listenToMeetingsRealtime()
     }
 
-    private fun listenToMeetingsRealtime(courseId: String?, studentId: String) {
-        if (courseId == null) {
-            Log.e("MeetingsFragment", "courseId is null")
-            return
-        }
+    private val attendanceListeners = mutableMapOf<String, ListenerRegistration>()
 
-        listenerRegistration?.remove() // Stop listener if already exists
+    private fun listenToMeetingsRealtime() {
+        listenerRegistration?.remove()
+        attendanceListeners.values.forEach { it.remove() }
+        attendanceListeners.clear()
 
         listenerRegistration = db.collection("course")
-            .document(courseId)
+            .document(courseId!!)
             .collection("meetings")
             .orderBy("datetime", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    Log.e("MeetingsFragment", "Error: ${error.message}")
+                    Log.e("MeetingsFragment", "Error listening to meetings: ${error.message}")
                     return@addSnapshotListener
                 }
 
-                if (snapshot != null) {
-                    val tempList = ArrayList<Meetings>()
-                    var loadedCount = 0
-                    val totalMeetings = snapshot.size()
+                if (snapshot == null || snapshot.isEmpty) {
+                    updateRecyclerView(emptyList())
+                    return@addSnapshotListener
+                }
 
-                    if (totalMeetings == 0) {
-                        updateRecyclerView(tempList)
-                        return@addSnapshotListener
-                    }
+                val tempList = mutableListOf<Meetings>()
+                val meetingsDocs = snapshot.documents
+                var loadedCount = 0
 
-                    for (doc in snapshot.documents) {
-                        val meeting = doc.toObject(Meetings::class.java)
-                        val meetingId = doc.id
-                        val sessionId = doc.getString("session_id")
+                for (doc in meetingsDocs) {
+                    val meeting = doc.toObject(Meetings::class.java)
+                    val meetingId = doc.id
+                    val sessionId = doc.getString("session_id")
 
-                        if (meeting != null) {
-                            if (sessionId.isNullOrBlank()) {
-                                meeting.status = "Alpa"
-                                tempList.add(meeting)
-                                loadedCount++
-                                if (loadedCount == totalMeetings) {
-                                    updateRecyclerView(tempList)
-                                }
-                                continue
-                            }
-
-                            db.collection("course")
-                                .document(courseId)
-                                .collection("meetings")
-                                .document(meetingId)
-                                .collection("sessions")
-                                .document(sessionId)
-                                .collection("attendances")
-                                .document(studentId)
-                                .addSnapshotListener { attDoc, _ ->
-                                    meeting.status = if (attDoc != null && attDoc.exists()) {
-                                        attDoc.getString("status") ?: "Hadir"
-                                    } else {
-                                        "Alpa"
-                                    }
-
-                                    tempList.add(meeting)
-                                    loadedCount++
-
-                                    if (loadedCount == totalMeetings) {
-                                        updateRecyclerView(tempList)
-                                    }
-                                }
-                        } else {
+                    if (meeting != null) {
+                        if (sessionId.isNullOrBlank()) {
+                            meeting.status = "Alpa"
+                            tempList.add(meeting)
                             loadedCount++
-                            if (loadedCount == totalMeetings) {
+                            if (loadedCount == meetingsDocs.size) {
                                 updateRecyclerView(tempList)
                             }
+                            continue
+                        }
+
+                        // Tambahkan listener untuk attendance studentId di tiap session
+                        val attendanceRef = db.collection("course").document(courseId!!)
+                            .collection("meetings").document(meetingId)
+                            .collection("sessions").document(sessionId)
+                            .collection("attendances").document(studentId!!)
+
+                        val listener = attendanceRef.addSnapshotListener { attDoc, _ ->
+                            meeting.status = if (attDoc != null && attDoc.exists()) {
+                                attDoc.getString("status") ?: "Hadir"
+                            } else {
+                                "Alpa"
+                            }
+
+                            // Update atau replace di tempList
+                            val index = tempList.indexOfFirst { it.datetime == meeting.datetime }
+                            if (index >= 0) {
+                                tempList[index] = meeting
+                            } else {
+                                tempList.add(meeting)
+                            }
+
+                            updateRecyclerView(tempList)
+                        }
+
+                        attendanceListeners["$meetingId-$sessionId"] = listener
+                    } else {
+                        loadedCount++
+                        if (loadedCount == meetingsDocs.size) {
+                            updateRecyclerView(tempList)
                         }
                     }
                 }
@@ -135,5 +139,18 @@ class MeetingsFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         listenerRegistration?.remove()
+        attendanceListeners.values.forEach { it.remove() }
+        attendanceListeners.clear()
+    }
+
+    companion object {
+        fun newInstance(courseId: String, nim: String): MeetingsFragment {
+            return MeetingsFragment().apply {
+                arguments = Bundle().apply {
+                    putString("courseId", courseId)
+                    putString("nim", nim)
+                }
+            }
+        }
     }
 }
