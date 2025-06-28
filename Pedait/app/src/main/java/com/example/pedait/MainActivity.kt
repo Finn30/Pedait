@@ -38,8 +38,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
-    private val locationThreshold = 50
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -158,7 +156,7 @@ class MainActivity : AppCompatActivity() {
                 val distance = calculateDistance(userLatLng, qrLocation)
 
                 if (distance <= radius) {
-                    sendAttendanceToServer(sessionId, courseId, meetingId)
+                    checkIfAlreadyAttended(sessionId, courseId, meetingId)
                 } else {
                     Toast.makeText(this, "Anda berada di luar area yang diizinkan", Toast.LENGTH_LONG).show()
                 }
@@ -168,6 +166,35 @@ class MainActivity : AppCompatActivity() {
         }.addOnFailureListener {
             Toast.makeText(this, "Gagal mendapatkan lokasi: ${it.message}", Toast.LENGTH_LONG).show()
         }
+    }
+
+    private fun checkIfAlreadyAttended(sessionId: String, courseId: String, meetingId: String) {
+        val currentUser = auth.currentUser ?: return
+
+        firestore.collection("users").document(currentUser.uid).get()
+            .addOnSuccessListener { doc ->
+                val studentId = doc.getString("nim") ?: return@addOnSuccessListener
+
+                firestore.collection("course").document(courseId)
+                    .collection("meetings").document(meetingId)
+                    .collection("sessions").document(sessionId)
+                    .collection("attendances").document(studentId)
+                    .get()
+                    .addOnSuccessListener { attDoc ->
+                        val status = attDoc.getString("status")?.lowercase()
+                        if (status == "hadir") {
+                            Toast.makeText(this, "Anda sudah presensi sebelumnya", Toast.LENGTH_LONG).show()
+                        } else {
+                            sendAttendanceToServer(sessionId, courseId, meetingId)
+                        }
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(this, "Gagal cek status presensi", Toast.LENGTH_SHORT).show()
+                    }
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Gagal mengambil NIM", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun sendAttendanceToServer(sessionId: String, courseId: String, meetingId: String) {
@@ -199,7 +226,7 @@ class MainActivity : AppCompatActivity() {
                     val requestBody = json.toString().toRequestBody("application/json".toMediaType())
 
                     val request = Request.Builder()
-                        .url("http://10.70.2.19:5000/attended")
+                        .url("http://10.70.3.143:5000/attended")
                         .post(requestBody)
                         .build()
 
@@ -208,7 +235,9 @@ class MainActivity : AppCompatActivity() {
                             val responseBody = response.body?.string()
                             Log.e("Attendance", "Response code: ${response.code}, body: $responseBody")
                             runOnUiThread {
-                                if (response.isSuccessful) {
+                                if (response.code == 410) {
+                                    Toast.makeText(this@MainActivity, "QR Code sudah kadaluarsa", Toast.LENGTH_LONG).show()
+                                } else if (response.isSuccessful) {
                                     Toast.makeText(this@MainActivity, "Presensi berhasil", Toast.LENGTH_SHORT).show()
                                     navigateToFragment(PresenceFragment(), R.id.menuPresence)
                                 } else {
