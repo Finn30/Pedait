@@ -102,9 +102,9 @@ class MeetingsFragment : Fragment() {
                         .get()
                         .addOnSuccessListener { attendanceDoc ->
                             meeting.status = if (attendanceDoc.exists()) {
-                                attendanceDoc.getString("status") ?: "belum hadir"
+                                attendanceDoc.getString("status") ?: "hadir"
                             } else {
-                                "belum hadir"
+                                "Alpa"
                             }
 
                             tempList.add(meeting)

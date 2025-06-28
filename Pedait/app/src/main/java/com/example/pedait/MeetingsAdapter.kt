@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import java.text.SimpleDateFormat
 import java.util.Locale
+import androidx.core.graphics.toColorInt
 
 class MeetingsAdapter(private val meetingsList: ArrayList<Meetings>) : RecyclerView.Adapter<MeetingsAdapter.ViewHolder>() {
 
@@ -33,6 +34,18 @@ class MeetingsAdapter(private val meetingsList: ArrayList<Meetings>) : RecyclerV
         holder.tvDateTime.text = formatDate
         holder.tvTopic.text = meetings.topic
         holder.tvStatus.text = meetings.status ?: "Belum hadir"
+
+        // Ubah warna teks status berdasarkan nilainya
+        val status = meetings.status?.lowercase() ?: "alpa"
+        when (status) {
+            "hadir" -> holder.tvStatus.setTextColor("#4CAF50".toColorInt()) // Hijau
+            "izin" -> holder.tvStatus.setTextColor("#2196F3".toColorInt()) // Biru
+            "sakit" -> holder.tvStatus.setTextColor("#9C27B0".toColorInt()) // Ungu
+            "lain" -> holder.tvStatus.setTextColor("#FF9800".toColorInt()) // Oranye
+            "alpa" -> holder.tvStatus.setTextColor("#F44336".toColorInt()) // Merah
+            else -> holder.tvStatus.setTextColor(android.graphics.Color.GRAY)
+        }
+
     }
 
     override fun getItemCount(): Int {

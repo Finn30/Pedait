@@ -24,16 +24,11 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanIntentResult
 import com.journeyapps.barcodescanner.ScanOptions
-import okhttp3.Call
-import okhttp3.Callback
+import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Response
 import org.json.JSONObject
 import java.io.IOException
-import androidx.core.view.size
 
 class MainActivity : AppCompatActivity() {
 
@@ -42,15 +37,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-
-    // Gedung A
-    private val allowedLocation = LatLng(-8.5871109, 116.0971896)
-
-    // Gedung D
-//    private val allowedLocation = LatLng(-8.5867426, 116.0967105)
-
-    // Gedung X
-//    private val allowedLocation = LatLng(-8.6223672, 116.0877100)
 
     private val locationThreshold = 50
 
@@ -66,6 +52,7 @@ class MainActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         bottomNavigationView = findViewById(R.id.bottomNavigationView)
         val fab = findViewById<FloatingActionButton>(R.id.scanQRBtn)
@@ -86,10 +73,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         fab.setOnClickListener {
-            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-            checkLocationThenAllowScan()
+            // ✅ Langsung buka scanner tanpa cek lokasi awal
+            scannerLauncher.launch(
+                ScanOptions().setPrompt("Scan QR Code").setDesiredBarcodeFormats(ScanOptions.QR_CODE)
+            )
         }
-
     }
 
     private fun openFragment(fragment: Fragment) {
@@ -105,7 +93,6 @@ class MainActivity : AppCompatActivity() {
         bottomNavigationView.selectedItemId = menuItemId
     }
 
-
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
@@ -118,74 +105,6 @@ class MainActivity : AppCompatActivity() {
             "schedule" -> navigateToFragment(ScheduleFragment(), R.id.menuSchedule)
             "profile" -> navigateToFragment(ProfileFragment(), R.id.menuProfile)
             else -> navigateToFragment(HomeFragment(), R.id.menuHome)
-        }
-    }
-
-    fun distanceBetween(lat1: Double, lng1: Double, lat2: Double, lng2: Double): Float {
-        val loc1 = Location("").apply {
-            latitude = lat1
-            longitude = lng1
-        }
-        val loc2 = Location("").apply {
-            latitude = lat2
-            longitude = lng2
-        }
-        return loc1.distanceTo(loc2) // meter
-    }
-
-
-    @SuppressLint("MissingPermission")
-    private fun checkLocationThenAllowScan() {
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "Izin lokasi tidak diberikan", Toast.LENGTH_LONG).show()
-            return
-        }
-
-        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
-            if (location != null) {
-                val userLatLng = LatLng(location.latitude, location.longitude)
-                val distance = calculateDistance(userLatLng, allowedLocation)
-
-                if (distance <= locationThreshold) {
-                    // Lokasi valid, baru boleh scan
-                    scannerLauncher.launch(
-                        ScanOptions().setPrompt("Scan QR Code").setDesiredBarcodeFormats(ScanOptions.QR_CODE)
-                    )
-                } else {
-                    Toast.makeText(this, "Anda berada di luar area yang diizinkan untuk scan", Toast.LENGTH_LONG).show()
-                }
-            } else {
-                Toast.makeText(this, "Tidak bisa mendapatkan lokasi", Toast.LENGTH_LONG).show()
-            }
-        }.addOnFailureListener {
-            Toast.makeText(this, "Gagal mendapatkan lokasi: ${it.message}", Toast.LENGTH_LONG).show()
-        }
-    }
-
-
-    private fun checkUserLocationAndScan() {
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "Izin lokasi tidak diberikan, aktifkan di pengaturan", Toast.LENGTH_LONG).show()
-            return
-        }
-
-        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
-            if (location != null) {
-                val userLatLng = LatLng(location.latitude, location.longitude)
-                val distance = calculateDistance(userLatLng, allowedLocation)
-
-                if (distance <= locationThreshold) {
-                    scannerLauncher.launch(
-                        ScanOptions().setPrompt("Scan QR Code").setDesiredBarcodeFormats(ScanOptions.QR_CODE)
-                    )
-                } else {
-                    Toast.makeText(this, "Anda berada di luar area yang diizinkan", Toast.LENGTH_LONG).show()
-                }
-            } else {
-                Toast.makeText(this, "Lokasi tidak ditemukan, coba lagi", Toast.LENGTH_LONG).show()
-            }
-        }.addOnFailureListener {
-            Toast.makeText(this, "Gagal mendapatkan lokasi: ${it.message}", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -210,12 +129,11 @@ class MainActivity : AppCompatActivity() {
                 val courseId = qrData.optString("course_id", "unknown_course")
                 val meetingId = qrData.optString("meeting_id", "unknown_meeting")
 
-                // Ganti allowedLocation dengan lokasi dari QR
-                val newAllowedLocation = LatLng(lat, lng)
+                val qrLocation = LatLng(lat, lng)
 
-//                checkUserDistanceAndSendAttendance(newAllowedLocation, sessionId, radius)
+                // ✅ Validasi lokasi pengguna terhadap QR code
                 checkUserDistanceAndSendAttendance(
-                    LatLng(lat, lng),
+                    qrLocation,
                     sessionId,
                     radius,
                     courseId,
@@ -229,6 +147,11 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("MissingPermission")
     private fun checkUserDistanceAndSendAttendance(qrLocation: LatLng, sessionId: String, radius: Int, courseId: String, meetingId: String) {
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "Izin lokasi tidak diberikan", Toast.LENGTH_LONG).show()
+            return
+        }
+
         fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
             if (location != null) {
                 val userLatLng = LatLng(location.latitude, location.longitude)
@@ -262,37 +185,33 @@ class MainActivity : AppCompatActivity() {
                     val studentId = document.getString("nim") ?: "N/A"
                     val studentName = document.getString("nama") ?: "N/A"
 
-                    // ✅ SIMPAN NIM DI SHARED PREFERENCES
                     val sharedPref = getSharedPreferences("user_data", MODE_PRIVATE)
                     sharedPref.edit().putString("nim", studentId).apply()
 
-                    val json = JSONObject()
-                    Log.e("Attendance", "Student ID: $studentId, Name: $studentName")
-                    json.put("session_id", sessionId)
-                    json.put("student_id", studentId)
-                    json.put("student_name", studentName)
-                    json.put("course_id", courseId)
-                    json.put("meeting_id", meetingId)
+                    val json = JSONObject().apply {
+                        put("session_id", sessionId)
+                        put("student_id", studentId)
+                        put("student_name", studentName)
+                        put("course_id", courseId)
+                        put("meeting_id", meetingId)
+                    }
 
                     val requestBody = json.toString().toRequestBody("application/json".toMediaType())
 
                     val request = Request.Builder()
-                        .url("http://10.70.14.195:5000/attended")
+                        .url("http://10.70.2.19:5000/attended")
                         .post(requestBody)
                         .build()
 
-                    val client = OkHttpClient()
-                    client.newCall(request).enqueue(object : Callback {
+                    OkHttpClient().newCall(request).enqueue(object : Callback {
                         override fun onResponse(call: Call, response: Response) {
                             val responseBody = response.body?.string()
                             Log.e("Attendance", "Response code: ${response.code}, body: $responseBody")
-                            if (response.isSuccessful) {
-                                runOnUiThread {
+                            runOnUiThread {
+                                if (response.isSuccessful) {
                                     Toast.makeText(this@MainActivity, "Presensi berhasil", Toast.LENGTH_SHORT).show()
                                     navigateToFragment(PresenceFragment(), R.id.menuPresence)
-                                }
-                            } else {
-                                runOnUiThread {
+                                } else {
                                     Toast.makeText(this@MainActivity, "Gagal mengirim data presensi", Toast.LENGTH_SHORT).show()
                                 }
                             }
@@ -304,7 +223,6 @@ class MainActivity : AppCompatActivity() {
                             }
                         }
                     })
-
                 } else {
                     Toast.makeText(this, "Data pengguna tidak ditemukan di Firestore", Toast.LENGTH_LONG).show()
                 }
@@ -314,7 +232,6 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -322,7 +239,7 @@ class MainActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 100 && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            checkUserLocationAndScan()
+            // tidak perlu apa-apa karena scan langsung dibuka lewat FAB
         } else {
             Toast.makeText(this, "Izin lokasi diperlukan untuk scan", Toast.LENGTH_LONG).show()
         }

@@ -18,8 +18,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
+            <TextView
+                android:id="@+id/tvKodeMK"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="K22P62"
+                android:textColor="@color/black"
+                android:textSize="20sp"/>
             <TextView
                 android:id="@+id/tvNamaMK"
                 android:layout_width="wrap_content"
@@ -29,14 +36,6 @@
                 android:textSize="26sp"
                 android:textStyle="normal"/>
 
-            <TextView
-                android:id="@+id/tvKodeMK"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="K22P62"
-                android:textColor="@color/black"
-                android:textSize="20sp"/>
 
         </LinearLayout>
 

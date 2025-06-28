@@ -18,6 +18,14 @@
         <domain includeSubdomains="true">10.70.1.35</domain>
         <domain includeSubdomains="true">192.168.1.173</domain>
         <domain includeSubdomains="true">10.70.14.195</domain>
+        <domain includeSubdomains="true">10.70.1.42</domain>
+        <domain includeSubdomains="true">10.70.1.128</domain>
+        <domain includeSubdomains="true">10.70.1.187</domain>
+        <domain includeSubdomains="true">10.70.1.130</domain>
+        <domain includeSubdomains="true">10.70.11.251</domain>
+        <domain includeSubdomains="true">10.70.3.56</domain>
+        <domain includeSubdomains="true">10.70.5.240</domain>
+        <domain includeSubdomains="true">10.70.2.19</domain>
     </domain-config>
 
 </network-security-config>
