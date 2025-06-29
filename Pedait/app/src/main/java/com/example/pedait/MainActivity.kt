@@ -226,7 +226,7 @@ class MainActivity : AppCompatActivity() {
                     val requestBody = json.toString().toRequestBody("application/json".toMediaType())
 
                     val request = Request.Builder()
-                        .url("http://192.168.125.173:5000/attended")
+                        .url("http://10.70.1.196:5000/attended")
                         .post(requestBody)
                         .build()
 
