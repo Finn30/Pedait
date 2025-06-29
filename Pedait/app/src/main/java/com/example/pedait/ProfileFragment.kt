@@ -38,7 +38,13 @@ class ProfileFragment : Fragment() {
             pickImageFromGallery()
         }
 
-        setupTextField(view.findViewById(R.id.rowNim), "NIM", "nim")
+        val rowNim = view.findViewById<View>(R.id.rowNim)
+        val labelNim = rowNim.findViewById<TextView>(R.id.label)
+        val valueNim = rowNim.findViewById<TextView>(R.id.value)
+        labelNim.text = "NIM"
+        rowNim.isClickable = false
+        rowNim.isFocusable = false
+
         setupTextField(view.findViewById(R.id.rowNama), "Nama", "nama")
         setupTextField(view.findViewById(R.id.rowTanggalLahir), "Tanggal Lahir", "tanggalLahir")
         setupTextField(view.findViewById(R.id.rowTempatLahir), "Tempat Lahir", "tempatLahir")
@@ -105,6 +111,8 @@ class ProfileFragment : Fragment() {
         val emailRow = view.findViewById<View>(R.id.rowEmail)
         val emailLabel = emailRow.findViewById<TextView>(R.id.label)
         val emailValue = emailRow.findViewById<TextView>(R.id.value)
+        emailRow.isClickable = false
+        emailRow.isFocusable = false
         emailLabel.text = "Email"
         emailValue.text = auth.currentUser?.email ?: "-"
 
