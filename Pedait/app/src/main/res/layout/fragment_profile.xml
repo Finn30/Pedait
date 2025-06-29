@@ -1,58 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:background="#D6E9FF"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#FFFFFF"
     android:fillViewport="true"
-    android:paddingBottom="80dp">
+    android:padding="16dp">
 
     <LinearLayout
         android:orientation="vertical"
-        android:padding="24dp"
-        android:gravity="center_horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:gravity="center_horizontal">
 
-        <ImageView
+        <!-- Foto Profil -->
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/ivProfilePicture"
-            android:src="@drawable/ic_profile"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
             android:layout_marginBottom="24dp"
-            android:background="@drawable/circle_background"
-            android:padding="16dp"
             android:clickable="true"
-            android:focusable="true"/>
+            android:focusable="true"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_profile"
+            app:shapeAppearanceOverlay="@style/RoundedImage"
+            android:background="@android:color/transparent"/>
 
-        <EditText android:id="@+id/etNim" android:hint="NIM" style="@style/EditProfileField" />
-        <EditText android:id="@+id/etNama" android:hint="Nama" style="@style/EditProfileField" />
-        <EditText android:id="@+id/etTanggalLahir" android:hint="Tanggal lahir" style="@style/EditProfileField" />
-        <EditText android:id="@+id/etTempatLahir" android:hint="Tempat lahir" style="@style/EditProfileField" />
-        <EditText android:id="@+id/etProvinsiLahir" android:hint="Provinsi lahir" style="@style/EditProfileField" />
-        <EditText android:id="@+id/etJenisKelamin" android:hint="Jenis Kelamin" style="@style/EditProfileField" />
-        <EditText android:id="@+id/etAgama" android:hint="Agama" style="@style/EditProfileField" />
-        <EditText android:id="@+id/etNoHp" android:hint="No. HP" style="@style/EditProfileField" />
-        <EditText android:id="@+id/etEmail" android:hint="Email" style="@style/EditProfileField" />
+        <!-- Baris Profil -->
+        <include layout="@layout/item_profile_row" android:id="@+id/rowNim" />
+        <include layout="@layout/item_profile_row" android:id="@+id/rowNama" />
+        <include layout="@layout/item_profile_row" android:id="@+id/rowTanggalLahir" />
+        <include layout="@layout/item_profile_row" android:id="@+id/rowTempatLahir" />
+        <include layout="@layout/item_profile_row" android:id="@+id/rowProvinsiLahir" />
+        <include layout="@layout/item_profile_row" android:id="@+id/rowJenisKelamin" />
+        <include layout="@layout/item_profile_row" android:id="@+id/rowAgama" />
+        <include layout="@layout/item_profile_row" android:id="@+id/rowNoHp" />
+        <include layout="@layout/item_profile_row" android:id="@+id/rowEmail" />
 
-        <Button
-            android:id="@+id/btnSave"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Simpan"
-            android:textAllCaps="false"
-            android:backgroundTint="#2196F3"
-            android:textColor="@android:color/white" />
-
+        <!-- Tombol Logout -->
         <TextView
+            android:id="@+id/btnLogout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/btnLogout"
-            android:text="Logout"
-            android:textColor="#F44336"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="28dp"
+            android:text="Sign Out"
+            android:textColor="#FFFFFF"
             android:textSize="16sp"
-            android:layout_gravity="center" />
-
+            android:background="@drawable/rounded_corner_red"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="10dp"
+            android:gravity="center" />
     </LinearLayout>
 </ScrollView>

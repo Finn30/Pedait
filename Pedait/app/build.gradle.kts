@@ -45,7 +45,7 @@ android {
 
 dependencies {
 
-    implementation (libs.okhttp)
+    implementation(libs.okhttp)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -64,5 +64,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    implementation(libs.glide)
+    implementation(libs.google.firebase.storage)
 
 }

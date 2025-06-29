@@ -1,6 +1,8 @@
 [versions]
 agp = "8.9.2"
 coreSplashscreen = "1.0.1"
+firebaseStorage = "21.0.2"
+glide = "4.16.0"
 imagepicker = "2.1"
 kotlin = "2.1.0"
 mapSecret = "2.0.1"
@@ -28,7 +30,10 @@ firebaseFirestore = "25.1.4"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
+firebase-storage = { module = "com.google.firebase:firebase-storage" }
 firebase-storage-ktx = { module = "com.google.firebase:firebase-storage-ktx" }
+glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
+google-firebase-storage = { module = "com.google.firebase:firebase-storage", version.ref = "firebaseStorage" }
 imagepicker = { module = "com.github.dhaval2404:imagepicker", version.ref = "imagepicker" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
