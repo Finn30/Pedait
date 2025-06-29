@@ -14,7 +14,7 @@
         android:id="@+id/label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Label"
+        android:text=""
         android:textColor="#666666"
         android:textSize="12sp"
         android:paddingBottom="2dp" />
@@ -23,7 +23,7 @@
         android:id="@+id/value"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Isi data"
+        android:text=""
         android:textSize="16sp"
         android:textColor="#000000"
         android:padding="0dp" />

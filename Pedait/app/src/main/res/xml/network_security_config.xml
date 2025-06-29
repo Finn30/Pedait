@@ -28,6 +28,7 @@
         <domain includeSubdomains="true">10.70.2.19</domain>
         <domain includeSubdomains="true">10.70.3.143</domain>
         <domain includeSubdomains="true">192.168.125.173</domain>
+        <domain includeSubdomains="true">10.70.1.196</domain>
     </domain-config>
 
 </network-security-config>
